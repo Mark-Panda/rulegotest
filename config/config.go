@@ -67,10 +67,10 @@ type Mqtt struct {
 // DefaultConfig 默认配置
 var DefaultConfig = Config{
 	DataDir: "./data",
-	//LogFile:      "./rulego.log",
+	// LogFile:         "./rulego.log",
 	CmdWhiteList:    "cp,scp,mvn,npm,yarn,git,make,cmake,docker,kubectl,helm,ansible,puppet,pytest,python,python3,pip,go,java,dotnet,gcc,g++,ctest",
 	LoadLuaLibs:     "true",
-	Server:          ":9090",
+	Server:          ":1234",
 	DefaultUsername: "admin",
 	MaxNodeLogSize:  40,
 	Mqtt: Mqtt{
