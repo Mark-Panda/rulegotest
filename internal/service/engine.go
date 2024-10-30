@@ -351,7 +351,102 @@ func (s *RuleEngineService) initRuleGo(logger *log.Logger, workspacePath string,
 
 	//加载规则链
 	rulesPath := path.Join(workspacePath, constants.DirWorkflows, username, constants.DirWorkflowsRule)
-	err = s.loadRules(rulesPath)
+	// err = s.loadRules(rulesPath)
+	ruleStr := `{
+	    "ruleChain": {
+	      "id": "chain_call_rest_api",
+	      "additionalInfo": null,
+	      "name": "测试规则链",
+	      "debugMode": false,
+	      "root": true,
+	      "configuration": null
+	    },
+	    "metadata": {
+	      "nodes": [
+	        {
+	          "id": "s1",
+	          "type": "jsFilter",
+	          "name": "过滤",
+	          "configuration": {
+	            "jsScript": "return msg!='bb';"
+	          },
+	          "debugMode": true,
+	          "additionalInfo": {
+	            "description": "ddd",
+	            "layoutX": 450,
+	            "layoutY": 240
+	          }
+	        },
+	        {
+	          "id": "s2",
+	          "additionalInfo": {
+	            "description": "",
+	            "layoutX": 670,
+	            "layoutY": 280
+	          },
+	          "type": "jsTransform",
+	          "name": "转换",
+	          "debugMode": true,
+	          "configuration": {
+	            "jsScript": "metadata['test']='test02';\nmetadata['index']=52;\nmsgType='TEST_MSG_TYPE2';\nmsg['aa']=66;\nreturn {'msg':msg,'metadata':metadata,'msgType':msgType};"
+	          }
+	        },
+	        {
+	          "id": "s3",
+	          "additionalInfo": {
+	            "description": "",
+	            "layoutX": 930,
+	            "layoutY": 190
+	          },
+	          "type": "restApiCall",
+	          "name": "推送数据",
+	          "debugMode": true,
+	          "configuration": {
+	            "headers": {
+	              "Content-Type": "application/json"
+	            },
+	            "maxParallelRequestsCount": 200,
+	            "requestMethod": "POST",
+	            "restEndpointUrlPattern": "http://127.0.0.1:9090/api/v1/webhook/test"
+	          }
+	        },
+	        {
+	          "id": "node_5",
+	          "additionalInfo": {
+	            "description": "",
+	            "layoutX": 920,
+	            "layoutY": 370
+	          },
+	          "type": "log",
+	          "name": "记录错误日志",
+	          "debugMode": false,
+	          "configuration": {
+	            "jsScript": "return 'Incoming message:\\\\n' + JSON.stringify(msg) +\n  '\\\\nIncoming metadata:\\\\n' + JSON.stringify(metadata);"
+	          }
+	        }
+	      ],
+	      "connections": [
+	        {
+	          "fromId": "s1",
+	          "toId": "s2",
+	          "type": "True"
+	        },
+	        {
+	          "fromId": "s2",
+	          "toId": "s3",
+	          "type": "Success"
+	        },
+	        {
+	          "fromId": "s2",
+	          "toId": "node_5",
+	          "type": "Failure"
+	        }
+	      ]
+	    }
+	  }`
+
+	err = s.loadRulesByPersisted(rulesPath, []string{ruleStr})
+
 	if err != nil {
 		logger.Fatal("parser rule file error:", err)
 	}
@@ -423,4 +518,41 @@ func (s *RuleEngineService) fillAdditionalInfo(def *types.RuleChain) {
 		def.RuleChain.AdditionalInfo["createTime"] = nowStr
 	}
 	def.RuleChain.AdditionalInfo["updateTime"] = nowStr
+}
+
+/**
+ * 加载规则链
+ *
+ * @folderPath 空路径 为了可以使用Load中的g.ruleEnginePool = engine.NewPool()赋值
+ * @ruleList 持久化查出来的所有需要加载的规则
+ */
+func (s *RuleEngineService) loadRulesByPersisted(folderPath string, ruleList []string) error {
+
+	var err error
+	// _ = fs.CreateDirs(folderPath)
+	err = s.Pool.Load(folderPath, rulego.WithConfig(s.ruleConfig))
+	if err != nil {
+		s.logger.Fatal("初始化规则引擎异常:", err)
+		return err
+	}
+	// 遍历所有的需要加载的规则链
+	for _, item := range ruleList {
+		var ruleTree RuleTree
+		json.Unmarshal([]byte(item), &ruleTree)
+		if _, err := s.Pool.New(ruleTree.RuleChain.Id, []byte(item), rulego.WithConfig(s.ruleConfig)); err != nil {
+			s.logger.Fatal("加载规则链异常:", err)
+			return err
+		}
+	}
+	return err
+}
+
+type RuleTree struct {
+	RuleChain RuleChainTree `json:"ruleChain"`
+	MetaData  interface{}   `json:"metadata"`
+}
+
+type RuleChainTree struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
 }
