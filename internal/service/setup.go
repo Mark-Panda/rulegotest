@@ -1,9 +1,15 @@
 package service
 
-import "ruleGoProject/config"
+import (
+	"ruleGoProject/config"
+	"ruleGoProject/internal/model"
+)
 
 func Setup(config config.Config) error {
 
+	if err := model.StartDB(); err != nil {
+		return err
+	}
 	if s, err := NewUserService(config); err != nil {
 		return err
 	} else {

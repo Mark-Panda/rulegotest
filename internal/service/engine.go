@@ -168,7 +168,8 @@ func (s *RuleEngineService) SaveDsl(chainId, nodeId string, def []byte) error {
 		//修改更新时间
 		s.fillAdditionalInfo(self)
 		//持久化规则链
-		return s.ruleDao.Save(s.username, chainId, def)
+		return s.ruleDao.SaveToDataBase(chainId, def)
+		// return s.ruleDao.Save(s.username, chainId, def)
 	}
 
 	return err
@@ -205,7 +206,8 @@ func (s *RuleEngineService) List() []types.RuleChain {
 // Delete 删除规则链
 func (s *RuleEngineService) Delete(chainId string) error {
 	s.Pool.Del(chainId)
-	if err := s.ruleDao.Delete(s.username, chainId); err != nil {
+	if err := s.ruleDao.DeleteToDataBase(chainId); err != nil {
+		// if err := s.ruleDao.Delete(s.username, chainId); err != nil {
 		return err
 	} else {
 		return EventServiceImpl.DeleteByChainId(s.username, chainId)
@@ -238,7 +240,8 @@ func (s *RuleEngineService) SaveBaseInfo(chainId string, baseInfo types.RuleChai
 			}
 		}
 		def, _ := json.Format(ruleEngine.DSL())
-		return s.ruleDao.Save(s.username, chainId, def)
+		return s.ruleDao.SaveToDataBase(chainId, def)
+		// return s.ruleDao.Save(s.username, chainId, def)
 	} else {
 		return errors.New("not found for" + chainId)
 	}
@@ -262,8 +265,8 @@ func (s *RuleEngineService) SaveConfiguration(chainId string, key string, config
 				return err
 			}
 			def, _ := json.Format(ruleEngine.DSL())
-			return s.ruleDao.Save(s.username, chainId, def)
-
+			// return s.ruleDao.Save(s.username, chainId, def)
+			return s.ruleDao.SaveToDataBase(chainId, def)
 		} else {
 			return errors.New("not found for" + chainId)
 		}
@@ -348,105 +351,18 @@ func (s *RuleEngineService) initRuleGo(logger *log.Logger, workspacePath string,
 	if err != nil {
 		logger.Fatal("parser plugin file error:", err)
 	}
-
+	allRuleList, aErr := dao.GetAllLoadRegulation()
+	if aErr != nil {
+		logger.Fatal("parser plugin file error:", aErr)
+	}
+	ruleStrList := make([]string, 0)
+	for _, itme := range allRuleList {
+		ruleStrList = append(ruleStrList, itme.RuleConfig)
+	}
 	//加载规则链
 	rulesPath := path.Join(workspacePath, constants.DirWorkflows, username, constants.DirWorkflowsRule)
-	// err = s.loadRules(rulesPath)
-	ruleStr := `{
-	    "ruleChain": {
-	      "id": "chain_call_rest_api",
-	      "additionalInfo": null,
-	      "name": "测试规则链",
-	      "debugMode": false,
-	      "root": true,
-	      "configuration": null
-	    },
-	    "metadata": {
-	      "nodes": [
-	        {
-	          "id": "s1",
-	          "type": "jsFilter",
-	          "name": "过滤",
-	          "configuration": {
-	            "jsScript": "return msg!='bb';"
-	          },
-	          "debugMode": true,
-	          "additionalInfo": {
-	            "description": "ddd",
-	            "layoutX": 450,
-	            "layoutY": 240
-	          }
-	        },
-	        {
-	          "id": "s2",
-	          "additionalInfo": {
-	            "description": "",
-	            "layoutX": 670,
-	            "layoutY": 280
-	          },
-	          "type": "jsTransform",
-	          "name": "转换",
-	          "debugMode": true,
-	          "configuration": {
-	            "jsScript": "metadata['test']='test02';\nmetadata['index']=52;\nmsgType='TEST_MSG_TYPE2';\nmsg['aa']=66;\nreturn {'msg':msg,'metadata':metadata,'msgType':msgType};"
-	          }
-	        },
-	        {
-	          "id": "s3",
-	          "additionalInfo": {
-	            "description": "",
-	            "layoutX": 930,
-	            "layoutY": 190
-	          },
-	          "type": "restApiCall",
-	          "name": "推送数据",
-	          "debugMode": true,
-	          "configuration": {
-	            "headers": {
-	              "Content-Type": "application/json"
-	            },
-	            "maxParallelRequestsCount": 200,
-	            "requestMethod": "POST",
-	            "restEndpointUrlPattern": "http://127.0.0.1:9090/api/v1/webhook/test"
-	          }
-	        },
-	        {
-	          "id": "node_5",
-	          "additionalInfo": {
-	            "description": "",
-	            "layoutX": 920,
-	            "layoutY": 370
-	          },
-	          "type": "log",
-	          "name": "记录错误日志",
-	          "debugMode": false,
-	          "configuration": {
-	            "jsScript": "return 'Incoming message:\\\\n' + JSON.stringify(msg) +\n  '\\\\nIncoming metadata:\\\\n' + JSON.stringify(metadata);"
-	          }
-	        }
-	      ],
-	      "connections": [
-	        {
-	          "fromId": "s1",
-	          "toId": "s2",
-	          "type": "True"
-	        },
-	        {
-	          "fromId": "s2",
-	          "toId": "s3",
-	          "type": "Success"
-	        },
-	        {
-	          "fromId": "s2",
-	          "toId": "node_5",
-	          "type": "Failure"
-	        }
-	      ]
-	    }
-	  }`
-
-	err = s.loadRulesByPersisted(rulesPath, []string{ruleStr})
-
+	// 加载所有持久化规则链
+	err = s.loadRulesByPersisted(rulesPath, ruleStrList)
 	if err != nil {
 		logger.Fatal("parser rule file error:", err)
 	}
@@ -494,17 +410,17 @@ func (s *RuleEngineService) loadPlugins(folderPath string) error {
 	return nil
 }
 
-// 加载规则链
-func (s *RuleEngineService) loadRules(folderPath string) error {
-	//创建文件夹
-	_ = fs.CreateDirs(folderPath)
-	//遍历所有文件
-	err := s.Pool.Load(folderPath, rulego.WithConfig(s.ruleConfig))
-	if err != nil {
-		s.logger.Fatal("parser rule file error:", err)
-	}
-	return err
-}
+// // 加载规则链
+// func (s *RuleEngineService) loadRules(folderPath string) error {
+// 	//创建文件夹
+// 	_ = fs.CreateDirs(folderPath)
+// 	//遍历所有文件
+// 	err := s.Pool.Load(folderPath, rulego.WithConfig(s.ruleConfig))
+// 	if err != nil {
+// 		s.logger.Fatal("parser rule file error:", err)
+// 	}
+// 	return err
+// }
 
 // fillAdditionalInfo 填充扩展字段
 func (s *RuleEngineService) fillAdditionalInfo(def *types.RuleChain) {
@@ -527,9 +443,7 @@ func (s *RuleEngineService) fillAdditionalInfo(def *types.RuleChain) {
  * @ruleList 持久化查出来的所有需要加载的规则
  */
 func (s *RuleEngineService) loadRulesByPersisted(folderPath string, ruleList []string) error {
-
 	var err error
-	// _ = fs.CreateDirs(folderPath)
 	err = s.Pool.Load(folderPath, rulego.WithConfig(s.ruleConfig))
 	if err != nil {
 		s.logger.Fatal("初始化规则引擎异常:", err)
@@ -539,7 +453,7 @@ func (s *RuleEngineService) loadRulesByPersisted(folderPath string, ruleList []s
 	for _, item := range ruleList {
 		var ruleTree RuleTree
 		json.Unmarshal([]byte(item), &ruleTree)
-		if _, err := s.Pool.New(ruleTree.RuleChain.Id, []byte(item), rulego.WithConfig(s.ruleConfig)); err != nil {
+		if _, err = s.Pool.New(ruleTree.RuleChain.Id, []byte(item), rulego.WithConfig(s.ruleConfig)); err != nil {
 			s.logger.Fatal("加载规则链异常:", err)
 			return err
 		}

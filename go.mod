@@ -9,7 +9,20 @@ require (
 	github.com/rulego/rulego-components v0.24.0
 	github.com/rulego/rulego-components-ai v0.0.0-20240425011741-82f8560f0203
 	github.com/rulego/rulego-components-ci v0.25.0
+	github.com/silenceper/log v0.0.0-20171204144354-e5ac7fa8a76a
+	go.uber.org/zap v1.27.0
 	gopkg.in/ini.v1 v1.67.0
+	gorm.io/gorm v1.25.10
+)
+
+require (
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
+	github.com/jackc/pgx/v5 v5.5.5 // indirect
+	github.com/jackc/puddle/v2 v2.2.1 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
+	go.uber.org/multierr v1.10.0 // indirect
 )
 
 require (
@@ -111,4 +124,5 @@ require (
 	gopkg.in/xmlpath.v2 v2.0.0-20150820204837-860cbeca3ebc // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	gorm.io/driver/postgres v1.5.9
 )
