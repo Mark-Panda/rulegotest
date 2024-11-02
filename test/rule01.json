@@ -1,0 +1,159 @@
+{
+	"ruleChain": {
+		"id": "rule01",
+		"name": "postgre数据库处理demo",
+		"debugMode": false,
+		"root": true,
+		"additionalInfo": {
+			"layoutX": "300",
+			"layoutY": "160"
+		}
+	},
+	"metadata": {
+		"endpoints": [],
+		"nodes": [
+			{
+				"id": "node_9",
+				"additionalInfo": {
+					"description": "",
+					"layoutX": 470,
+					"layoutY": 210
+				},
+				"type": "jsTransform",
+				"name": "数据处理",
+				"debugMode": true,
+				"configuration": {
+					"jsScript": "msg.age = parseInt(msg.age) + 1\nreturn {'msg':msg,'metadata':metadata,'msgType':msgType};"
+				}
+			},
+			{
+				"id": "s1",
+				"additionalInfo": {
+					"description": "",
+					"layoutX": 590,
+					"layoutY": 300
+				},
+				"type": "dbClient",
+				"name": "插入1条记录",
+				"debugMode": true,
+				"configuration": {
+					"driverName": "postgres",
+					"dsn": "postgresql://rust:rust@127.0.0.1:5432/rule_go?sslmode=disable",
+					"params": [
+						"${msg.id}",
+						"${msg.name}",
+						"${msg.age}"
+					],
+					"poolSize": 5,
+					"sql": "insert into users (id, name, age) values (?,?,?)"
+				}
+			},
+			{
+				"id": "s2",
+				"additionalInfo": {
+					"description": "",
+					"layoutX": 700,
+					"layoutY": 380
+				},
+				"type": "dbClient",
+				"name": "查询1条记录",
+				"debugMode": true,
+				"configuration": {
+					"driverName": "postgres",
+					"dsn": "postgresql://rust:rust@127.0.0.1:5432/rule_go?sslmode=disable",
+					"getOne": true,
+					"params": [
+						"${msg.age}"
+					],
+					"poolSize": 0,
+					"sql": "select * from users where age = ?"
+				}
+			},
+			{
+				"id": "s3",
+				"additionalInfo": {
+					"description": "",
+					"layoutX": 820,
+					"layoutY": 470
+				},
+				"type": "dbClient",
+				"name": "查询多条记录，参数不使用占位符",
+				"debugMode": true,
+				"configuration": {
+					"driverName": "postgres",
+					"dsn": "postgresql://rust:rust@127.0.0.1:5432/rule_go?sslmode=disable",
+					"getOne": true,
+					"poolSize": 0,
+					"sql": "select * from users where age >= 18"
+				}
+			},
+			{
+				"id": "s4",
+				"additionalInfo": {
+					"description": "",
+					"layoutX": 920,
+					"layoutY": 550
+				},
+				"type": "dbClient",
+				"name": "更新记录，参数使用占位符",
+				"debugMode": true,
+				"configuration": {
+					"driverName": "postgres",
+					"dsn": "postgresql://rust:rust@127.0.0.1:5432/rule_go?sslmode=disable",
+					"params": [
+						"${msg.id}"
+					],
+					"poolSize": 0,
+					"sql": "update users set age = 30 where id = ?"
+				}
+			},
+			{
+				"id": "s5",
+				"additionalInfo": {
+					"description": "",
+					"layoutX": 1070,
+					"layoutY": 650
+				},
+				"type": "dbClient",
+				"name": "删除记录",
+				"debugMode": true,
+				"configuration": {
+					"driverName": "postgres",
+					"dsn": "postgresql://rust:rust@127.0.0.1:5432/rule_go?sslmode=disable",
+					"params": [
+						"${msg.id}"
+					],
+					"poolSize": 0,
+					"sql": "delete from users where id = ?"
+				}
+			}
+		],
+		"connections": [
+			{
+				"fromId": "s1",
+				"toId": "s2",
+				"type": "Success"
+			},
+			{
+				"fromId": "s2",
+				"toId": "s3",
+				"type": "Success"
+			},
+			{
+				"fromId": "s3",
+				"toId": "s4",
+				"type": "Success"
+			},
+			{
+				"fromId": "s4",
+				"toId": "s5",
+				"type": "Success"
+			},
+			{
+				"fromId": "node_9",
+				"toId": "s1",
+				"type": "Success"
+			}
+		]
+	}
+}

@@ -45,11 +45,18 @@ func (d *RuleDao) Delete(username, chainId string) error {
 // 保存或更新到数据库
 func (d *RuleDao) SaveToDataBase(chainId string, def []byte) error {
 	v, _ := json.Format(def)
+	ruleConfigInfo, gErr := FindRegulationByRuleChainId(chainId)
+	if gErr != nil {
+		return gErr
+	}
+	if ruleConfigInfo != nil {
+		return UpdateRegulationByRuleChainId(chainId, string(v))
+	}
 	createInfo := model.Regulation{
 		RuleChainId: chainId,
 		RuleConfig:  string(v),
 	}
-	return SaveRegulation(createInfo)
+	return CreateRegulation(createInfo)
 }
 
 // 从数据库删除规则链

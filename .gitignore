@@ -1,2 +1,3 @@
 .idea
 .vscode
+cmd/server/data/workflows/admin/runs
