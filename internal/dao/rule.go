@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"ruleGoProject/config"
 	"ruleGoProject/internal/constants"
+	"ruleGoProject/internal/model"
 
 	"github.com/rulego/rulego/utils/fs"
 	"github.com/rulego/rulego/utils/json"
@@ -39,4 +40,19 @@ func (d *RuleDao) Delete(username, chainId string) error {
 	pathStr := path.Join(paths...)
 	file := filepath.Join(pathStr, chainId+constants.RuleChainFileSuffix)
 	return os.RemoveAll(file)
+}
+
+// 保存或更新到数据库
+func (d *RuleDao) SaveToDataBase(chainId string, def []byte) error {
+	v, _ := json.Format(def)
+	createInfo := model.Regulation{
+		RuleChainId: chainId,
+		RuleConfig:  string(v),
+	}
+	return SaveRegulation(createInfo)
+}
+
+// 从数据库删除规则链
+func (d *RuleDao) DeleteToDataBase(chainId string) error {
+	return DeleteRegulationByRuleChainId(chainId)
 }
