@@ -22,6 +22,7 @@ func NewRuleDao(config config.Config) (*RuleDao, error) {
 	}, nil
 }
 
+// 弃用 改为存储持久化 SaveToDataBase
 func (d *RuleDao) Save(username, chainId string, def []byte) error {
 	var paths = []string{d.config.DataDir, constants.DirWorkflows}
 	paths = append(paths, username, constants.DirWorkflowsRule)
@@ -34,6 +35,7 @@ func (d *RuleDao) Save(username, chainId string, def []byte) error {
 	return fs.SaveFile(filepath.Join(pathStr, chainId+constants.RuleChainFileSuffix), v)
 }
 
+// 弃用 改为持久化删除 DeleteToDataBase
 func (d *RuleDao) Delete(username, chainId string) error {
 	var paths = []string{d.config.DataDir, constants.DirWorkflows}
 	paths = append(paths, username, constants.DirWorkflowsRule)

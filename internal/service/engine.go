@@ -79,7 +79,7 @@ func (s *UserRuleEngineService) Init(username string) (*RuleEngineService, error
 }
 
 type RuleEngineService struct {
-	Pool       *rulego.RuleGo
+	Pool       *OwnRuleGo
 	username   string
 	config     config.Config
 	ruleConfig types.Config
@@ -93,7 +93,7 @@ type RuleEngineService struct {
 }
 
 func NewRuleEngineService(c config.Config, username string) (*RuleEngineService, error) {
-	var pool = &rulego.RuleGo{}
+	var pool = NewRuleGo()
 	ruleDao, err := dao.NewRuleDao(c)
 	if err != nil {
 		return nil, err
@@ -112,7 +112,7 @@ func NewRuleEngineService(c config.Config, username string) (*RuleEngineService,
 		ruleChainDebugData: NewRuleChainDebugData(maxNodeLogSize),
 		ruleDao:            ruleDao,
 	}
-	service.initRuleGo(logger.Logger, c.DataDir, username)
+	service.initRuleGo(logger.Logger, c.DataDir)
 	return service, nil
 }
 
@@ -301,7 +301,7 @@ func (s *RuleEngineService) DebugData() *RuleChainDebugData {
 }
 
 // 初始化规则链池
-func (s *RuleEngineService) initRuleGo(logger *log.Logger, workspacePath string, username string) {
+func (s *RuleEngineService) initRuleGo(logger *log.Logger, workspacePath string) {
 
 	ruleConfig := rulego.NewConfig(types.WithDefaultPool(), types.WithLogger(logger))
 	//加载自定义配置
@@ -359,10 +359,8 @@ func (s *RuleEngineService) initRuleGo(logger *log.Logger, workspacePath string,
 	for _, itme := range allRuleList {
 		ruleStrList = append(ruleStrList, itme.RuleConfig)
 	}
-	//加载规则链
-	rulesPath := path.Join(workspacePath, constants.DirWorkflows, username, constants.DirWorkflowsRule)
 	// 加载所有持久化规则链
-	err = s.loadRulesByPersisted(rulesPath, ruleStrList)
+	err = s.loadRulesByPersisted(ruleStrList)
 	if err != nil {
 		logger.Fatal("parser rule file error:", err)
 	}
@@ -442,13 +440,13 @@ func (s *RuleEngineService) fillAdditionalInfo(def *types.RuleChain) {
  * @folderPath 空路径 为了可以使用Load中的g.ruleEnginePool = engine.NewPool()赋值
  * @ruleList 持久化查出来的所有需要加载的规则
  */
-func (s *RuleEngineService) loadRulesByPersisted(folderPath string, ruleList []string) error {
+func (s *RuleEngineService) loadRulesByPersisted(ruleList []string) error {
 	var err error
-	err = s.Pool.Load(folderPath, rulego.WithConfig(s.ruleConfig))
-	if err != nil {
-		s.logger.Fatal("初始化规则引擎异常:", err)
-		return err
-	}
+	// err = s.Pool.Load(folderPath, rulego.WithConfig(s.ruleConfig))
+	// if err != nil {
+	// 	s.logger.Fatal("初始化规则引擎异常:", err)
+	// 	return err
+	// }
 	// 遍历所有的需要加载的规则链
 	for _, item := range ruleList {
 		var ruleTree RuleTree
