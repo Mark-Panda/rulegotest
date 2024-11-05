@@ -51,7 +51,7 @@ func (d *RuleDao) SaveToDataBase(chainId string, def []byte) error {
 	if gErr != nil {
 		return gErr
 	}
-	if ruleConfigInfo != nil {
+	if ruleConfigInfo != nil && ruleConfigInfo.RuleChainId != "" {
 		return UpdateRegulationByRuleChainId(chainId, string(v))
 	}
 	createInfo := model.Regulation{

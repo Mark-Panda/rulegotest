@@ -1,0 +1,198 @@
+[
+  {
+    "ruleChain": {
+      "id": "subChain2",
+      "name": "子规则链2"
+    },
+    "metadata": {
+      "nodes": [
+        {
+          "id": "sub_s1",
+          "type": "jsFilter",
+          "name": "过滤",
+          "debugMode": true,
+          "configuration": {
+            "jsScript": "return msg=='aa';"
+          }
+        },
+        {
+          "id": "sub_s2",
+          "type": "jsTransform",
+          "name": "转换",
+          "debugMode": true,
+          "configuration": {
+            "jsScript": "metadata['test']='Modified by sub chain';\n metadata['index']=52;\n msgType='TEST_MSG_TYPE2';var msg2={};\n  msg2['bb']=22\n return {'msg':msg2,'metadata':metadata,'msgType':msgType};"
+          }
+        }
+      ],
+      "connections": [
+        {
+          "fromId": "sub_s1",
+          "toId": "sub_s2",
+          "type": "True"
+        }
+      ]
+    }
+  },
+
+  {
+    "ruleChain": {
+      "id": "subChain1",
+      "name": "子规则链1"
+    },
+    "metadata": {
+      "nodes": [
+        {
+          "id": "sub_s1",
+          "type": "jsFilter",
+          "name": "过滤",
+          "debugMode": true,
+          "configuration": {
+            "jsScript": "return msg=='aa';"
+          }
+        },
+        {
+          "id": "sub_s2",
+          "type": "jsTransform",
+          "name": "转换",
+          "debugMode": true,
+          "configuration": {
+            "jsScript": "metadata['test']='Modified by sub chain';\n metadata['index']=52;\n msgType='TEST_MSG_TYPE2';var msg2={};\n  msg2['bb']=22\n return {'msg':msg2,'metadata':metadata,'msgType':msgType};"
+          }
+        }
+      ],
+      "connections": [
+        {
+          "fromId": "sub_s1",
+          "toId": "sub_s2",
+          "type": "True"
+        }
+      ]
+    }
+  },
+
+  {
+    "ruleChain": {
+      "id": "subChain3",
+      "name": "子规则链3"
+    },
+    "metadata": {
+      "nodes": [
+        {
+          "id": "sub_s1",
+          "type": "jsFilter",
+          "name": "过滤",
+          "debugMode": true,
+          "configuration": {
+            "jsScript": "return msg=='aa';"
+          }
+        },
+        {
+          "id": "sub_s2",
+          "type": "jsTransform",
+          "name": "转换",
+          "debugMode": true,
+          "configuration": {
+            "jsScript": "metadata['test']='Modified by sub chain';\n metadata['index']=52;\n msgType='TEST_MSG_TYPE2';var msg2={};\n  msg2['bb']=22\n return {'msg':msg2,'metadata':metadata,'msgType':msgType};"
+          }
+        }
+      ],
+      "connections": [
+        {
+          "fromId": "sub_s1",
+          "toId": "sub_s2",
+          "type": "True"
+        }
+      ]
+    }
+  },
+
+  {
+    "ruleChain": {
+      "id": "rootClue01",
+      "name": "根规则链",
+      "debugMode": true,
+      "root": true,
+      "additionalInfo": {
+        "createTime": "2024/11/05 22:18:26",
+        "description": "",
+        "updateTime": "2024/11/05 22:18:26",
+        "username": "admin",
+        "layoutX": "280",
+        "layoutY": "280"
+      }
+    },
+    "metadata": {
+      "endpoints": [],
+      "nodes": [
+        {
+          "id": "node_2",
+          "type": "msgTypeSwitch",
+          "name": "消息路由",
+          "configuration": {},
+          "debugMode": true,
+          "additionalInfo": {
+            "layoutX": 460,
+            "layoutY": 280
+          }
+        },
+        {
+          "id": "node_4",
+          "type": "flow",
+          "name": "子规则链1",
+          "configuration": {
+            "targetId": "subChain1"
+          },
+          "debugMode": true,
+          "additionalInfo": {
+            "layoutX": 710,
+            "layoutY": 200
+          }
+        },
+        {
+          "id": "node_6",
+          "type": "flow",
+          "name": "子规则链2",
+          "configuration": {
+            "targetId": "subChain2"
+          },
+          "debugMode": true,
+          "additionalInfo": {
+            "layoutX": 700,
+            "layoutY": 310
+          }
+        },
+        {
+          "id": "node_8",
+          "type": "flow",
+          "name": "子规则链3",
+          "configuration": {
+            "targetId": "subChain3"
+          },
+          "debugMode": true,
+          "additionalInfo": {
+            "layoutX": 690,
+            "layoutY": 440
+          }
+        }
+      ],
+      "connections": [
+        {
+          "fromId": "node_2",
+          "toId": "node_4",
+          "type": "msg1"
+        },
+        {
+          "fromId": "node_2",
+          "toId": "node_6",
+          "type": "msg2"
+        },
+        {
+          "fromId": "node_2",
+          "toId": "node_8",
+          "type": "msg3"
+        }
+      ]
+    }
+  }
+]

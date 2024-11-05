@@ -24,9 +24,9 @@ func UpdateRegulationByRuleChainId(ruleChainId string, ruleConfig string) error 
 
 // 根据规则链ID查询规则链信息
 func FindRegulationByRuleChainId(ruleChainId string) (*model.Regulation, error) {
-	r := model.Regulation{}
+	r := &model.Regulation{}
 	err := model.DBClient.Client.Model(&model.Regulation{}).Where("rule_chain_id = ?", ruleChainId).Limit(1).Find(&r).Error
-	return &r, err
+	return r, err
 }
 
 // 创建规则链
