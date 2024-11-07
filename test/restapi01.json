@@ -7,10 +7,10 @@
 		"additionalInfo": {
 			"createTime": "2024/11/07 21:07:37",
 			"description": "",
+			"layoutX": "370",
+			"layoutY": "220",
 			"updateTime": "2024/11/07 21:07:37",
-			"username": "admin",
-			"layoutX": "280",
-			"layoutY": "280"
+			"username": "admin"
 		}
 	},
 	"metadata": {
@@ -21,23 +21,68 @@
 				"type": "restApiCall",
 				"name": "测试请求",
 				"configuration": {
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"maxParallelRequestsCount": 200,
+					"proxyPort": 0,
+					"readTimeoutMs": 0,
 					"requestMethod": "GET",
+					"restEndpointUrlPattern": "http://localhost:8000/training-camp/tmextra/list?page=1&pageSize=10&periods=${msg.periods}",
+					"withoutRequestBody": false
+				},
+				"debugMode": true,
+				"additionalInfo": {
+					"description": "",
+					"layoutX": 520,
+					"layoutY": 270
+				}
+			},
+			{
+				"id": "node_9",
+				"type": "restApiCall",
+				"name": "post请求",
+				"configuration": {
+					"requestMethod": "POST",
 					"headers": {
 						"Content-Type": "application/json"
 					},
 					"readTimeoutMs": 0,
 					"maxParallelRequestsCount": 200,
 					"proxyPort": 0,
-					"restEndpointUrlPattern": "http://localhost:8000/training-camp/tmextra/list?page=1&pageSize=10&periods=${msg.periods}",
-					"withoutRequestBody": false
+					"restEndpointUrlPattern": "http://localhost:8000/training-camp/tmextra/creat"
 				},
 				"debugMode": true,
 				"additionalInfo": {
-					"layoutX": 520,
-					"layoutY": 270
+					"layoutX": 860,
+					"layoutY": 420
+				}
+			},
+			{
+				"id": "node_15",
+				"type": "jsTransform",
+				"name": "数据转换",
+				"configuration": {
+					"jsScript": "\nmsg.doc = '替换字段内容'\nreturn {'msg':msg,'metadata':metadata,'msgType':msgType};"
+				},
+				"debugMode": false,
+				"additionalInfo": {
+					"layoutX": 680,
+					"layoutY": 350
 				}
 			}
 		],
-		"connections": []
+		"connections": [
+			{
+				"fromId": "node_2",
+				"toId": "node_15",
+				"type": "Success"
+			},
+			{
+				"fromId": "node_15",
+				"toId": "node_9",
+				"type": "Success"
+			}
+		]
 	}
 }
