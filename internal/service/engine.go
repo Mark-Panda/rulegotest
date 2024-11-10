@@ -151,6 +151,7 @@ func (s *RuleEngineService) GetDsl(chainId, nodeId string) ([]byte, error) {
 // SaveDsl 保存或者更新DSL
 func (s *RuleEngineService) SaveDsl(chainId, nodeId string, def []byte) error {
 	var err error
+	// TODO: 校验def中ID不可以有特殊字符->
 	// 检查规则链如果存在子规则链的话是否存在死循环的情况
 	err = graph.CheckInfiniteLoop(chainId, def)
 	if err != nil {
