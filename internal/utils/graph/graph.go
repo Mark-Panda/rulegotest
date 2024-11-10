@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"ruleGoProject/internal/dao"
 )
 
@@ -227,10 +228,49 @@ func FindAllRelevanceClue(chainId string, ruleChainsByte []byte, ruleChainsList 
 	return nil
 }
 
+func CheckIdValid(ruleChainsByte []byte) error {
+	var chainRuleChains RuleChainWithMetadata
+	if err := json.Unmarshal(ruleChainsByte, &chainRuleChains); err != nil {
+		return err
+	}
+
+	if !isValidID(chainRuleChains.RuleChain.ID) {
+		return fmt.Errorf("节点命名不规范 %s", chainRuleChains.RuleChain.ID)
+	}
+	for _, node := range chainRuleChains.Metadata.Nodes {
+		if !isValidID(node.ID) {
+			return fmt.Errorf("节点命名不规范 %s", node.ID)
+		}
+		if node.Type == "flow" {
+			targetId := node.Configuration.(map[string]interface{})["targetId"].(string)
+			if !isValidID(targetId) {
+				return fmt.Errorf("节点命名不规范 %s", targetId)
+			}
+		}
+	}
+	for _, conn := range chainRuleChains.Metadata.Connections {
+		if !isValidID(conn.FromID) {
+			return fmt.Errorf("节点命名不规范 %s", conn.FromID)
+		}
+		if !isValidID(conn.ToID) {
+			return fmt.Errorf("节点命名不规范 %s", conn.ToID)
+		}
+	}
+	return nil
+}
+
+// 验证ID是否只包含字母、数字和下划线
+func isValidID(id string) bool {
+	matched, _ := regexp.MatchString(`^[a-zA-Z0-9_]+$`, id)
+	return matched
+}
+
 // CheckInfiniteLoop 检查死循环
 func CheckInfiniteLoop(chainId string, ruleChainsByte []byte) error {
 	var err error
-
+	if err = CheckIdValid(ruleChainsByte); err != nil {
+		return err
+	}
 	var ruleChainsList []*RuleChainWithMetadata
 	chainMap := make(map[string]bool, 0)
 	chainMap[chainId] = true
