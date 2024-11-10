@@ -9,6 +9,7 @@ import (
 	"ruleGoProject/config/logger"
 	"ruleGoProject/internal/constants"
 	"ruleGoProject/internal/dao"
+	"ruleGoProject/internal/utils/graph"
 	"sort"
 	"sync"
 	"time"
@@ -150,6 +151,11 @@ func (s *RuleEngineService) GetDsl(chainId, nodeId string) ([]byte, error) {
 // SaveDsl 保存或者更新DSL
 func (s *RuleEngineService) SaveDsl(chainId, nodeId string, def []byte) error {
 	var err error
+	// 检查规则链如果存在子规则链的话是否存在死循环的情况
+	err = graph.CheckInfiniteLoop(chainId, def)
+	if err != nil {
+		return err
+	}
 	if chainId != "" {
 		ruleEngine, ok := s.Pool.Get(chainId)
 		if ok {
@@ -169,9 +175,7 @@ func (s *RuleEngineService) SaveDsl(chainId, nodeId string, def []byte) error {
 		s.fillAdditionalInfo(self)
 		//持久化规则链
 		return s.ruleDao.SaveToDataBase(chainId, def)
-		// return s.ruleDao.Save(s.username, chainId, def)
 	}
-
 	return err
 }
 
