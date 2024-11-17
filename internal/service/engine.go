@@ -7,6 +7,7 @@ import (
 	"path"
 	"ruleGoProject/config"
 	"ruleGoProject/config/logger"
+	_ "ruleGoProject/internal/components/xlsx2json"
 	"ruleGoProject/internal/constants"
 	"ruleGoProject/internal/dao"
 	"ruleGoProject/internal/utils/graph"

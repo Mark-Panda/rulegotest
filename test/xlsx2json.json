@@ -1,0 +1,76 @@
+{
+    "ruleChain": {
+        "id": "xlsxtojson01",
+        "name": "测试xlsx解析",
+        "debugMode": true,
+        "root": true,
+        "additionalInfo": {
+            "createTime": "2024/11/07 21:07:37",
+            "description": "",
+            "layoutX": "370",
+            "layoutY": "220",
+            "updateTime": "2024/11/17 10:36:10",
+            "username": "admin"
+        }
+    },
+    "metadata": {
+        "endpoints": [
+
+        ],
+        "nodes": [
+            {
+                "id": "node_2",
+                "additionalInfo": {
+                    "description": "",
+                    "layoutX": 520,
+                    "layoutY": 270
+                },
+                "type": "x/xlsx2Json",
+                "name": "测试请求",
+                "debugMode": true,
+                "configuration": {
+                    "downLoadUrl": "https://xxxxxx/批量打标签2-66655aff9e4abd181589ca5c80b16d12.xlsx"
+                }
+            },
+            {
+                "id": "node_15",
+                "type": "jsTransform",
+                "name": "数据转换",
+                "configuration": {
+                    "jsScript": "\nreturn {'msg':msg,'metadata':metadata,'msgType':msgType};"
+                },
+                "debugMode": true,
+                "additionalInfo": {
+                    "description": "",
+                    "layoutX": 680,
+                    "layoutY": 350
+                }
+            },
+            {
+                "id": "node_19",
+                "type": "log",
+                "name": "失败日志",
+                "configuration": {
+                    "jsScript": "return 'Incoming message:\\n' + JSON.stringify(msg) + '\\nIncoming metadata:\\n' + JSON.stringify(metadata);"
+                },
+                "debugMode": true,
+                "additionalInfo": {
+                    "layoutX": 740,
+                    "layoutY": 240
+                }
+            }
+        ],
+        "connections": [
+            {
+                "fromId": "node_2",
+                "toId": "node_15",
+                "type": "Success"
+            },
+            {
+                "fromId": "node_2",
+                "toId": "node_19",
+                "type": "Failure"
+            }
+        ]
+    }
+}
