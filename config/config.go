@@ -39,6 +39,16 @@ type Config struct {
 	Mqtt Mqtt `ini:"mqtt"`
 	// 全局自定义配置，组件可以通过${global.xxx}方式取值
 	Global types.Metadata `ini:"global"`
+	// Postgre 配置
+	PostGre PostGre `ini:"postgre"`
+}
+
+type PostGre struct {
+	User     string `ini:"user"`     // 必须
+	Password string `ini:"password"` // 必须
+	Host     string `ini:"host"`     // 必须
+	Port     int32  `ini:"port"`     // 可选，默认5432
+	DBname   string `ini:"dbname"`   // 必须
 }
 type Mqtt struct {
 	//是否启用mqtt
@@ -77,5 +87,12 @@ var DefaultConfig = Config{
 		Server:       "172.0.0.1:1883",
 		CleanSession: true,
 		ToChainId:    "chain_call_rest_api",
+	},
+	PostGre: PostGre{
+		User:     "rust",
+		Password: "rust",
+		Host:     "127.0.0.1",
+		Port:     5432,
+		DBname:   "rule_go",
 	},
 }

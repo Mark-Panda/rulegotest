@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"ruleGoProject/config"
 	"sync"
 	"time"
 
@@ -42,16 +43,16 @@ var pgOnce sync.Once
 var DBClient *DB
 
 // StartDB 启动并初始化数据库
-func StartDB() error {
+func StartDB(config config.Config) error {
 	var err error
 	pgOnce.Do(func() {
 
 		client, err := NewDBWithStruct(&ORMConfig{
-			User:            "rust",
-			Password:        "rust",
-			Host:            "127.0.0.1",
-			Port:            5432,
-			DBname:          "rule_go",
+			User:            config.PostGre.User,
+			Password:        config.PostGre.Password,
+			Host:            config.PostGre.Host,
+			Port:            config.PostGre.Port,
+			DBname:          config.PostGre.DBname,
 			MaxIdleConns:    4,
 			MaxOpenConns:    4,
 			ConnMaxLifeTime: 60 * time.Second,

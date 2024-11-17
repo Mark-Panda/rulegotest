@@ -30,6 +30,7 @@ import (
 
 	endpointApi "github.com/rulego/rulego/api/types/endpoint"
 	"github.com/rulego/rulego/endpoint/rest"
+	"github.com/rulego/rulego/node_pool"
 	"gopkg.in/ini.v1"
 )
 
@@ -76,6 +77,12 @@ func main() {
 
 	log.Printf("use config file=%s \n", configFile)
 
+	if err := loadNodePool(); err != nil {
+		log.Fatal("loadNodePool error:", err)
+	} else {
+		log.Print("loadNodePool success")
+	}
+
 	//初始化服务
 	if err := service.Setup(c); err != nil {
 		log.Fatal("error:", err)
@@ -106,15 +113,19 @@ func main() {
 
 	select {
 	case <-sigs:
-		if restEndpoint != nil {
-			restEndpoint.Destroy()
-		}
-		if mqttEndpoint != nil {
-			mqttEndpoint.Destroy()
-		}
-		log.Println("stopped server")
-		os.Exit(0)
+		cleanup(restEndpoint, mqttEndpoint)
 	}
+}
+
+func cleanup(restEndpoint *rest.Rest, mqttEndpoint endpointApi.Endpoint) {
+	if restEndpoint != nil {
+		restEndpoint.Destroy()
+	}
+	if mqttEndpoint != nil {
+		mqttEndpoint.Destroy()
+	}
+	log.Println("stopped server")
+	os.Exit(0)
 }
 
 // 初始化日志记录器
@@ -128,4 +139,33 @@ func initLogger(c config.Config) *log.Logger {
 		}
 		return log.New(f, "", log.LstdFlags)
 	}
+}
+
+// 全局共享节点配置
+func loadNodePool() error {
+	var dsl = []byte(`
+	{
+		"ruleChain": {
+			"id": "default_node_pool",
+			"name": "全局共享节点池"
+		},
+		"metadata": {
+			"endpoints": [
+			],
+			"nodes": [
+			{
+				"id": "local_postgre_client",
+				"type": "dbClient",
+				"name": "本地PostgreSql-数据库连接池",
+				"configuration": {
+				"driverName": "postgres",
+				"dsn": "postgres://rust:rust@127.0.0.1:5432/rule_go?sslmode=disable"
+				}
+			}
+			]
+		}
+	}
+	`)
+	_, err := node_pool.DefaultNodePool.Load(dsl)
+	return err
 }

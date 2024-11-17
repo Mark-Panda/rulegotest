@@ -14,7 +14,6 @@ CREATE TABLE "public"."regulation" (
 
 COMMENT ON TABLE "public"."regulation" IS '规则配置表';
 
--- CREATE INDEX "idx_regulation_rule_chain_idd" ON "public"."regulation" ("rule_chain_id");
 CREATE UNIQUE INDEX regulation_rule_chain_id_unique_idx ON regulation(rule_chain_id);
 
 COMMENT ON COLUMN "public"."regulation"."id" IS '主键ID';

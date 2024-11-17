@@ -7,7 +7,7 @@ import (
 
 func Setup(config config.Config) error {
 
-	if err := model.StartDB(); err != nil {
+	if err := model.StartDB(config); err != nil {
 		return err
 	}
 	if s, err := NewUserService(config); err != nil {
