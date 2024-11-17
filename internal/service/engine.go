@@ -415,18 +415,6 @@ func (s *RuleEngineService) loadPlugins(folderPath string) error {
 	return nil
 }
 
-// // 加载规则链
-// func (s *RuleEngineService) loadRules(folderPath string) error {
-// 	//创建文件夹
-// 	_ = fs.CreateDirs(folderPath)
-// 	//遍历所有文件
-// 	err := s.Pool.Load(folderPath, rulego.WithConfig(s.ruleConfig))
-// 	if err != nil {
-// 		s.logger.Fatal("parser rule file error:", err)
-// 	}
-// 	return err
-// }
-
 // fillAdditionalInfo 填充扩展字段
 func (s *RuleEngineService) fillAdditionalInfo(def *types.RuleChain) {
 	//修改更新时间
@@ -449,11 +437,6 @@ func (s *RuleEngineService) fillAdditionalInfo(def *types.RuleChain) {
  */
 func (s *RuleEngineService) loadRulesByPersisted(ruleList []string) error {
 	var err error
-	// err = s.Pool.Load(folderPath, rulego.WithConfig(s.ruleConfig))
-	// if err != nil {
-	// 	s.logger.Fatal("初始化规则引擎异常:", err)
-	// 	return err
-	// }
 	// 遍历所有的需要加载的规则链
 	for _, item := range ruleList {
 		var ruleTree RuleTree

@@ -1,12 +1,8 @@
 # server
 
-[English](README.md)| 中文
-
-该示例工程演示如何把RuleGo作为一个独立运行的规则引擎服务，该工程也是一个开发RuleGo应用的脚手架。你可以基于该工程进行二次开发，也可以直接下载可执行[二进制文件](https://github.com/rulego/rulego/releases)。
+该示例是基于RuleGo中的server示例改编而成，并实现RuleGo的功能且提供示例。
 
 前端在线调试界面：[example.rulego.cc](https://example.rulego.cc/) 。
-
-另外规则链编辑器工具：[RuleGo-Editor](https://editor.rulego.cc/) ，配置该工程HTTP API，可以对规则链管理和调试。
 
 该工程提供以下功能：
 
@@ -20,6 +16,9 @@
 * 保存执行快照。
 * 组件列表API。
 * 订阅MQTT数据，并根据根规则链定义交给规则引擎处理。
+* 规则链数据持久化。
+* 实现了自定义组件xlsx2json，并提供了运行示例。
+* 共享资源实现并提供运行示例。
 
 ## HTTP API
 
@@ -95,40 +94,4 @@ go build -tags with_extend .
 
 ```shell
 nohup ./server -c="./config.conf" >> console.log &
-```
-
-## 配置文件参数
-```ini
-# 数据目录
-data_dir = ./data
-# cmd组件命令白名单
-cmd_white_list = cp,scp,mvn,npm,yarn,git,make,cmake,docker,kubectl,helm,ansible,puppet,pytest,python,python3,pip,go,java,dotnet,gcc,g++,ctest
-# 是否加载lua第三方库
-load_lua_libs = true
-# http server
-server = :9090
-# 默认用户
-default_username = admin
-# 是否把节点执行日志打印到日志文件
-debug = true
-# 最大节点日志大小，默认40
-max_node_log_size =40
-
-# mqtt 配置
-[mqtt]
-# 是否开启mqtt
-enabled = false
-# mqtt server
-server = 127.0.0.1:1883
-# 订阅主题，多个与`,`号隔开。默认:#
-topics = `#`
-# 订阅数据交给哪个规则链处理
-to_chain_id = chain_call_rest_api
-
-# 全局自定义配置，组件可以通过${global.xxx}方式取值
-[global]
-# 例子
-sqlDriver = mysql
-sqlDsn = root:root@tcp(127.0.0.1:3306)/test
-
 ```
