@@ -1,6 +1,7 @@
 package config
 
 import (
+	"ruleGoProject/internal/constants"
 	"time"
 
 	"github.com/rulego/rulego/api/types"
@@ -14,6 +15,9 @@ func Get() *Config {
 
 func Set(c Config) {
 	C = c
+	if C.EventBusChainId == "" {
+		C.EventBusChainId = constants.KeyDefaultIntegrationChainId
+	}
 }
 
 type Config struct {
@@ -35,11 +39,23 @@ type Config struct {
 	MaxNodeLogSize int `ini:"max_node_log_size"`
 	//静态文件路径映射，例如:/ui/*filepath=/home/demo/dist,/images/*filepath=/home/demo/dist/images
 	ResourceMapping string `ini:"resource_mapping"`
-	// Mqtt mqtt配置
-	Mqtt Mqtt `ini:"mqtt"`
 	// 全局自定义配置，组件可以通过${global.xxx}方式取值
 	Global types.Metadata `ini:"global"`
-	// Postgre 配置
+	// 节点池文件，规则链json格式
+	NodePoolFile string `ini:"node_pool_file"`
+	// 是否保存运行日志到文件
+	SaveRunLog bool `ini:"save_run_log"`
+	// ScriptMaxExecutionTime json执行脚本的最大执行时间，单位毫秒
+	ScriptMaxExecutionTime int `ini:"script_max_execution_time"`
+	// EndpointEnabled 是否启用endpoint
+	EndpointEnabled *bool `ini:"endpoint_enabled"`
+	// SecretKey 密钥
+	SecretKey *string `ini:"secret_key"`
+	// EventBusChainId 核心规则链Id
+	EventBusChainId string `ini:"event_bus_chain_id"`
+	// Mqtt mqtt配置
+	Mqtt Mqtt `ini:"mqtt"`
+	// PostGre 数据库配置
 	PostGre PostGre `ini:"postgre"`
 }
 
@@ -77,22 +93,11 @@ type Mqtt struct {
 // DefaultConfig 默认配置
 var DefaultConfig = Config{
 	DataDir: "./data",
-	// LogFile:         "./rulego.log",
+	//LogFile:      "./rulego.log",
 	CmdWhiteList:    "cp,scp,mvn,npm,yarn,git,make,cmake,docker,kubectl,helm,ansible,puppet,pytest,python,python3,pip,go,java,dotnet,gcc,g++,ctest",
 	LoadLuaLibs:     "true",
-	Server:          ":1234",
+	Server:          ":9090",
 	DefaultUsername: "admin",
 	MaxNodeLogSize:  40,
-	Mqtt: Mqtt{
-		Server:       "172.0.0.1:1883",
-		CleanSession: true,
-		ToChainId:    "chain_call_rest_api",
-	},
-	PostGre: PostGre{
-		User:     "rust",
-		Password: "rust",
-		Host:     "127.0.0.1",
-		Port:     5432,
-		DBname:   "rule_go",
-	},
+	ResourceMapping: "/editor/*filepath=./editor,/images/*filepath=./editor/images",
 }

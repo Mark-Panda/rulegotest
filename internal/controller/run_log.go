@@ -12,8 +12,13 @@ import (
 	"github.com/rulego/rulego/utils/json"
 )
 
-// GetDebugDataRouter 创建获取节点调试数据路由
-func GetDebugDataRouter(url string) endpointApi.Router {
+var Log = &log{}
+
+type log struct {
+}
+
+// GetDebugLogs 创建获取节点调试数据路由
+func (c *log) GetDebugLogs(url string) endpointApi.Router {
 	return endpoint.NewRouter().From(url).Process(AuthProcess).Process(func(router endpointApi.Router, exchange *endpointApi.Exchange) bool {
 		msg := exchange.In.GetMsg()
 		chainId := msg.Metadata.GetValue(constants.KeyChainId)
@@ -21,11 +26,11 @@ func GetDebugDataRouter(url string) endpointApi.Router {
 		username := msg.Metadata.GetValue(constants.KeyUsername)
 		var current = 1
 		var pageSize = 20
-		currentStr := msg.Metadata.GetValue(constants.KeyCurrent)
+		currentStr := msg.Metadata.GetValue(constants.KeyPage)
 		if i, err := strconv.Atoi(currentStr); err == nil {
 			current = i
 		}
-		pageSizeStr := msg.Metadata.GetValue(constants.KeyPageSize)
+		pageSizeStr := msg.Metadata.GetValue(constants.KeySize)
 		if i, err := strconv.Atoi(pageSizeStr); err == nil {
 			pageSize = i
 		}
@@ -44,20 +49,7 @@ func GetDebugDataRouter(url string) endpointApi.Router {
 	}).End()
 }
 
-func WsNodeLogRouter(url string) endpointApi.Router {
-	return endpoint.NewRouter().From(url).Process(AuthProcess).Process(func(router endpointApi.Router, exchange *endpointApi.Exchange) bool {
-		msg := exchange.In.GetMsg()
-		username := msg.Metadata.GetValue(constants.KeyUsername)
-		if s, ok := service.UserRuleEngineServiceImpl.Get(username); ok {
-			s.AddOnDebugObserver(exchange.In.GetParam(constants.KeyClientId), func(chainId, flowType string, nodeId string, msg types.RuleMsg, relationType string, err error) {
-				exchange.Out.SetBody([]byte(msg.Data))
-			})
-		}
-		return true
-	}).End()
-}
-
-func GetRunsRouter(url string) endpointApi.Router {
+func (c *log) List(url string) endpointApi.Router {
 	return endpoint.NewRouter().From(url).Process(AuthProcess).Process(func(router endpointApi.Router, exchange *endpointApi.Exchange) bool {
 		msg := exchange.In.GetMsg()
 		chainId := msg.Metadata.GetValue(constants.KeyChainId)
@@ -67,11 +59,11 @@ func GetRunsRouter(url string) endpointApi.Router {
 		if id == "" {
 			var current = 1
 			var pageSize = 20
-			currentStr := msg.Metadata.GetValue(constants.KeyCurrent)
+			currentStr := msg.Metadata.GetValue(constants.KeyPage)
 			if i, err := strconv.Atoi(currentStr); err == nil {
 				current = i
 			}
-			pageSizeStr := msg.Metadata.GetValue(constants.KeyPageSize)
+			pageSizeStr := msg.Metadata.GetValue(constants.KeySize)
 			if i, err := strconv.Atoi(pageSizeStr); err == nil {
 				pageSize = i
 			}
@@ -81,8 +73,10 @@ func GetRunsRouter(url string) endpointApi.Router {
 				return false
 			} else {
 				result = map[string]interface{}{
+					"page":  current,
+					"size":  pageSize,
 					"total": total,
-					"data":  v,
+					"items": v,
 				}
 			}
 		} else {
@@ -105,7 +99,7 @@ func GetRunsRouter(url string) endpointApi.Router {
 	}).End()
 }
 
-func DeleteRunsRouter(url string) endpointApi.Router {
+func (c *log) Delete(url string) endpointApi.Router {
 	return endpoint.NewRouter().From(url).Process(AuthProcess).Process(func(router endpointApi.Router, exchange *endpointApi.Exchange) bool {
 		msg := exchange.In.GetMsg()
 		chainId := msg.Metadata.GetValue(constants.KeyChainId)
@@ -115,6 +109,21 @@ func DeleteRunsRouter(url string) endpointApi.Router {
 		if err := service.EventServiceImpl.Delete(username, chainId, id); err != nil {
 			exchange.Out.SetStatusCode(http.StatusInternalServerError)
 			exchange.Out.SetBody([]byte(err.Error()))
+		}
+		return true
+	}).End()
+}
+
+func (c *log) WsNodeLogRouter(url string) endpointApi.Router {
+	return endpoint.NewRouter().From(url).Process(AuthProcess).Process(func(router endpointApi.Router, exchange *endpointApi.Exchange) bool {
+		msg := exchange.In.GetMsg()
+		username := msg.Metadata.GetValue(constants.KeyUsername)
+		if s, ok := service.UserRuleEngineServiceImpl.Get(username); ok {
+			chainId := exchange.In.GetParam(constants.KeyChainId)
+			clientId := exchange.In.GetParam(constants.KeyClientId)
+			s.AddOnDebugObserver(chainId, clientId, func(chainId, flowType string, nodeId string, msg types.RuleMsg, relationType string, err error) {
+				exchange.Out.SetBody([]byte(msg.Data))
+			})
 		}
 		return true
 	}).End()

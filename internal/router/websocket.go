@@ -38,7 +38,9 @@ func NewWebsocketServe(c config.Config, restEndpoint *rest.Rest) *websocketEndpo
 				username = config.C.DefaultUsername
 			}
 			if s, ok := service.UserRuleEngineServiceImpl.Get(username); ok {
-				s.AddOnDebugObserver(exchange.In.GetParam(constants.KeyClientId), func(chainId, flowType string, nodeId string, msg types.RuleMsg, relationType string, err error) {
+				chainId := exchange.In.GetParam(constants.KeyChainId)
+				clientId := exchange.In.GetParam(constants.KeyClientId)
+				s.AddOnDebugObserver(chainId, clientId, func(chainId, flowType string, nodeId string, msg types.RuleMsg, relationType string, err error) {
 					errStr := ""
 					if err != nil {
 						errStr = err.Error()
@@ -54,6 +56,10 @@ func NewWebsocketServe(c config.Config, restEndpoint *rest.Rest) *websocketEndpo
 					}
 					jsonStr, _ := json.Marshal(log)
 					exchange.Out.SetBody(jsonStr)
+					//写入报错
+					if exchange.Out.GetError() != nil {
+						s.RemoveOnDebugObserver(clientId)
+					}
 				})
 			}
 		case endpointApi.EventDisconnect:
@@ -67,7 +73,7 @@ func NewWebsocketServe(c config.Config, restEndpoint *rest.Rest) *websocketEndpo
 			}
 		}
 	}
-	_, _ = wsEndpoint.AddRouter(controller.WsNodeLogRouter(apiBasePath + "/event/ws/:clientId"))
+	_, _ = wsEndpoint.AddRouter(controller.Log.WsNodeLogRouter(apiBasePath + "/" + moduleLogs + "/ws/:chainId/:clientId"))
 
 	return wsEndpoint
 }

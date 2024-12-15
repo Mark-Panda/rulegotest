@@ -27,8 +27,7 @@ func NewEventDao(config config.Config) (*EventDao, error) {
 }
 
 // SaveRunLog 保存工作流运行日志快照
-func (s *EventDao) SaveRunLog(ctx types.RuleContext, snapshot types.RuleChainRunSnapshot) error {
-	var username = s.getUserNameFromSnapshot(snapshot)
+func (s *EventDao) SaveRunLog(username string, ctx types.RuleContext, snapshot types.RuleChainRunSnapshot) error {
 	var paths = []string{s.config.DataDir, constants.DirWorkflows}
 	chainId := ctx.RuleChain().GetNodeId().Id
 	paths = append(paths, username, constants.DirWorkflowsRun, chainId)
@@ -38,13 +37,13 @@ func (s *EventDao) SaveRunLog(ctx types.RuleContext, snapshot types.RuleChainRun
 	snapshot.Id = time.Now().Format("20060102150405000") + "_" + snapshot.Id
 	//保存到文件
 	if byteV, err := json.Marshal(snapshot); err != nil {
-		logger.Logger.Printf("dao/EventDao:SaveRunLog marshal error%s", err.Error())
+		logger.Logger.Printf("dao/EventDao:SaveRunLog marshal error", err)
 		return err
 	} else {
-		v, _ := json.Format(byteV)
+		//v, _ := json.Format(byteV)
 		//保存规则链到文件
-		if err = fs.SaveFile(filepath.Join(pathStr, snapshot.Id), v); err != nil {
-			logger.Logger.Printf("dao/EventDao:SaveRunLog save file error%s", err.Error())
+		if err = fs.SaveFile(filepath.Join(pathStr, snapshot.Id), byteV); err != nil {
+			logger.Logger.Printf("dao/EventDao:SaveRunLog save file error", err)
 			return err
 		}
 	}
@@ -135,12 +134,4 @@ func (s *EventDao) Get(username, chainId, snapshotId string) (types.RuleChainRun
 	} else {
 		return snapshot, nil
 	}
-}
-
-func (s *EventDao) getUserNameFromSnapshot(snapshot types.RuleChainRunSnapshot) string {
-	var username = config.C.DefaultUsername
-	if v, ok := snapshot.RuleChain.RuleChain.AdditionalInfo[constants.KeyUsername]; ok {
-		return v
-	}
-	return username
 }

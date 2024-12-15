@@ -26,10 +26,9 @@ func NewEventService(config config.Config) (*EventService, error) {
 }
 
 // SaveRunLog 保存工作流运行日志快照
-func (s *EventService) SaveRunLog(ctx types.RuleContext, snapshot types.RuleChainRunSnapshot) error {
-	return s.EventDao.SaveRunLog(ctx, snapshot)
+func (s *EventService) SaveRunLog(username string, ctx types.RuleContext, snapshot types.RuleChainRunSnapshot) error {
+	return s.EventDao.SaveRunLog(username, ctx, snapshot)
 }
-
 func (s *EventService) Delete(username, chainId, id string) error {
 	return s.EventDao.Delete(username, chainId, id)
 }

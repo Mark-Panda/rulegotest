@@ -5,8 +5,8 @@ go 1.21
 require (
 	github.com/dop251/goja v0.0.0-20231024180952-594410467bc6
 	github.com/gorilla/websocket v1.5.0
-	github.com/rulego/rulego v0.26.2
-	github.com/rulego/rulego-components v0.24.0
+	github.com/rulego/rulego v0.27.0
+	github.com/rulego/rulego-components v0.27.0
 	github.com/rulego/rulego-components-ai v0.0.0-20240425011741-82f8560f0203
 	github.com/rulego/rulego-components-ci v0.25.0
 	github.com/silenceper/log v0.0.0-20171204144354-e5ac7fa8a76a
@@ -86,7 +86,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.7 // indirect
 	github.com/mattn/go-sqlite3 v1.14.7 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
-	github.com/montanaflynn/stats v0.6.3 // indirect
+	github.com/montanaflynn/stats v0.7.1 // indirect
 	github.com/nats-io/nats.go v1.35.0 // indirect
 	github.com/nats-io/nkeys v0.4.7 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
@@ -125,7 +125,7 @@ require (
 	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
-	google.golang.org/protobuf v1.33.0 // indirect
+	google.golang.org/protobuf v1.33.1-0.20240408130810-98873a205002 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/xmlpath.v2 v2.0.0-20150820204837-860cbeca3ebc // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

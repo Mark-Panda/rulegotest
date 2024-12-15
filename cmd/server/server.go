@@ -32,6 +32,21 @@ import (
 	"github.com/rulego/rulego/endpoint/rest"
 	"github.com/rulego/rulego/node_pool"
 	"gopkg.in/ini.v1"
+
+	_ "github.com/rulego/rulego-components-ai/ai/action"
+	_ "github.com/rulego/rulego-components-ci/ci/action"
+	_ "github.com/rulego/rulego-components/endpoint/kafka"
+	_ "github.com/rulego/rulego-components/endpoint/nats"
+	_ "github.com/rulego/rulego-components/endpoint/rabbitmq"
+	_ "github.com/rulego/rulego-components/endpoint/redis"
+	_ "github.com/rulego/rulego-components/endpoint/redis_stream"
+	_ "github.com/rulego/rulego-components/external/kafka"
+	_ "github.com/rulego/rulego-components/external/nats"
+	_ "github.com/rulego/rulego-components/external/opengemini"
+	_ "github.com/rulego/rulego-components/external/rabbitmq"
+	_ "github.com/rulego/rulego-components/external/redis"
+	_ "github.com/rulego/rulego-components/filter"
+	_ "github.com/rulego/rulego-components/transform"
 )
 
 const (
