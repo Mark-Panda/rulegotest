@@ -162,8 +162,16 @@ func (s *RuleEngineService) Execute(chainId string, msg types.RuleMsg, opts ...t
 func (s *RuleEngineService) Get(chainId string) (types.RuleChain, bool) {
 	if e, ok := s.Pool.Get(chainId); ok {
 		return e.Definition(), true
+	} else {
+		regulation, err := s.ruleDao.FindDataBaseByRuleChainId(chainId)
+		if err != nil {
+			return types.RuleChain{}, false
+		}
+		s.Load(chainId)
+		ruleChain := types.RuleChain{}
+		json.Unmarshal(regulation, &ruleChain)
+		return ruleChain, true
 	}
-	return types.RuleChain{}, false
 }
 
 // GetDsl 获取DSL
@@ -241,9 +249,13 @@ func (s *RuleEngineService) Undeploy(chainId string) error {
 // Load 加载规则链，创建规则链引擎实例，如果规则链状态=disabled则不创建
 func (s *RuleEngineService) Load(chainId string) error {
 	def, err := s.ruleDao.FindDataBaseByRuleChainId(chainId)
+	if err != nil {
+		return err
+	}
 	if ruleEngine, ok := s.Pool.Get(chainId); ok {
 		err = ruleEngine.ReloadSelf(def)
 	} else {
+		// 如果规则链状态=disabled则不创建 会报错
 		_, err = s.Pool.New(chainId, def, rulego.WithConfig(s.ruleConfig))
 	}
 	if err != nil {
@@ -590,9 +602,8 @@ func (s *RuleEngineService) loadRulesByPersisted(ruleList []string) error {
 	for _, item := range ruleList {
 		var ruleTree RuleTree
 		json.Unmarshal([]byte(item), &ruleTree)
-		if err = s.Load(ruleTree.RuleChain.Id); err != nil {
-			s.logger.Printf("load rule chain error: %s", err.Error())
-			return err
+		if lerr := s.Load(ruleTree.RuleChain.Id); lerr != nil {
+			s.logger.Printf("load rule chain error: %s", lerr.Error())
 		}
 	}
 	// //加载主规则链

@@ -5,6 +5,8 @@ import (
 	"ruleGoProject/internal/model"
 	"sync"
 
+	"github.com/dromara/carbon/v2"
+
 	"github.com/rulego/rulego/utils/json"
 )
 
@@ -52,9 +54,12 @@ func (d *RuleDao) SaveToDataBase(chainId string, def []byte) error {
 	if ruleConfigInfo != nil && ruleConfigInfo.RuleChainId != "" {
 		return UpdateRegulationByRuleChainId(chainId, string(v))
 	}
+	t := carbon.Now(carbon.Shanghai).StdTime()
 	createInfo := model.Regulation{
 		RuleChainId: chainId,
 		RuleConfig:  string(v),
+		CreatedAt:   &t,
+		UpdatedAt:   &t,
 	}
 	return CreateRegulation(createInfo)
 }
