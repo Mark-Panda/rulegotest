@@ -45,6 +45,6 @@ func DeleteRegulationByRuleChainId(ruleChainId string) error {
 // 查询最新修改的一条规则链
 func FindLatestRegulation() (*model.Regulation, error) {
 	r := &model.Regulation{}
-	err := model.DBClient.Client.Model(&model.Regulation{}).Order("update_time desc").Limit(1).Find(&r).Error
+	err := model.DBClient.Client.Model(&model.Regulation{}).Order("updated_at desc").Limit(1).Find(&r).Error
 	return r, err
 }
